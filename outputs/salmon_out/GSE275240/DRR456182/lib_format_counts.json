@@ -1,0 +1,22 @@
+{
+    "read_files": "[ /home/T19376007/COVID19/GSE275240/fastq/DRR456182_1.fastq.gz, /home/T19376007/COVID19/GSE275240/fastq/DRR456182_2.fastq.gz]",
+    "expected_format": "ISR",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 29914590,
+    "num_assigned_fragments": 29914590,
+    "num_frags_with_concordant_consistent_mappings": 25740094,
+    "num_frags_with_inconsistent_or_orphan_mappings": 4471575,
+    "strand_mapping_bias": 0.000001515143686320502,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 39,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 25740094,
+    "SF": 776696,
+    "SR": 3694840,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}

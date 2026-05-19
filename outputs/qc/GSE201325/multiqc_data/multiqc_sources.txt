@@ -1,0 +1,13 @@
+Module	Section	Sample Name	Source
+FastQC	all_sections	SRR18889440_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889440_1_fastqc.zip
+FastQC	all_sections	SRR18889440_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889440_2_fastqc.zip
+FastQC	all_sections	SRR18889441_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889441_1_fastqc.zip
+FastQC	all_sections	SRR18889441_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889441_2_fastqc.zip
+FastQC	all_sections	SRR18889442_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889442_1_fastqc.zip
+FastQC	all_sections	SRR18889442_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889442_2_fastqc.zip
+FastQC	all_sections	SRR18889443_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889443_1_fastqc.zip
+FastQC	all_sections	SRR18889443_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889443_2_fastqc.zip
+FastQC	all_sections	SRR18889444_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889444_1_fastqc.zip
+FastQC	all_sections	SRR18889444_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889444_2_fastqc.zip
+FastQC	all_sections	SRR18889445_1	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889445_1_fastqc.zip
+FastQC	all_sections	SRR18889445_2	/home/T19376007/deepbio_projects/rnaseq/salmon-rnaseq/outputs/qc/GSE201325/SRR18889445_2_fastqc.zip

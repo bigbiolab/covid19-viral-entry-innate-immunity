@@ -1,0 +1,22 @@
+{
+    "read_files": "[ /kaggle/working/Kaggle_test/GSE207923/fastq/SRR20079542_1.fastq.gz, /kaggle/working/Kaggle_test/GSE207923/fastq/SRR20079542_2.fastq.gz]",
+    "expected_format": "IU",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 78086917,
+    "num_assigned_fragments": 78086917,
+    "num_frags_with_concordant_consistent_mappings": 74901781,
+    "num_frags_with_inconsistent_or_orphan_mappings": 3827424,
+    "strand_mapping_bias": 0.5025348329167233,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 37640754,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 37261027,
+    "SF": 2074022,
+    "SR": 1753402,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
