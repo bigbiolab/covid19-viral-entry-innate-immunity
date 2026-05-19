@@ -33,15 +33,18 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
-# Set up metadata frame
-# Metadata for DESeq2
+# Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
+  sample    = samples,
   condition = c("treated", "treated", "control", "treated", "control", "control")
 )
 
 # condition as factor 
 col_data$condition <- factor(col_data$condition)
+
+# Export metadata for later use 
+write.csv(col_data, "outputs/metadata/GSE201325_metadata.csv", row.names = FALSE)
 
 # Get the mapping from transcript IDs to gene symbols 
 # What are the columns in the database?
