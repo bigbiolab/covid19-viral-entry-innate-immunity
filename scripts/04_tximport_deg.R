@@ -1,7 +1,7 @@
 # RNA-seq Analysis in R: tximport and Gene-level Summarization
 # Author: Md. Jubayer Hossain
 # Affiliation: DeepBio Limited | CHIRAL Bangladesh
-# Date: October 2025
+# Date: May 2026
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
@@ -18,11 +18,11 @@ library(EnsDb.Hsapiens.v86)
 
 # Get the quant files and metadata
 # Collect the sample quant files
-samples <- list.dirs('outputs/salmon_out', recursive = FALSE, full.names = FALSE)
+samples <- list.dirs('outputs/salmon_out/GSE201325', recursive = FALSE, full.names = FALSE)
 samples
 
 # check quant files 
-quant_files <- file.path('outputs/salmon_out', samples, 'quant.sf')
+quant_files <- file.path('outputs/salmon_out/GSE201325', samples, 'quant.sf')
 quant_files
 
 # sample names 
@@ -34,12 +34,11 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Set up metadata frame
-# Metadata for DESeq2: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE52778
+# Metadata for DESeq2
 col_data <- data.frame(
   row.names = samples,
-  condition = rep(c("untreated","dexamethasone"), times = 4)
+  condition = c("treated", "treated", "control", "treated", "control", "control")
 )
-
 
 # condition as factor 
 col_data$condition <- factor(col_data$condition)
@@ -79,15 +78,15 @@ txi$abundance
 
 # raw counts 
 raw_counts <- txi$counts
-
-write.csv(raw_counts, "outputs/tables/raw_counts.csv", row.names = FALSE)
-write_rds(raw_counts, "outputs/tables/raw_counts.rds")
-
+write.csv(raw_counts, "outputs/counts_data/raw_counts/GSE201325_raw_counts.csv", row.names = FALSE)
 
 # TPM 
 tpm_counts <- txi$abundance
-write.csv(tpm_counts, "outputs/tables/tpm_counts.csv", row.names = FALSE)
-write_rds(tpm_counts, "outputs/tables/tpm_counts.rds")
+write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE201325_tpm_counts.csv", row.names = FALSE)
+
+
+# This must return TRUE before you proceed
+all(colnames(txi) == rownames(col_data))
 
 
 # Make DESeq dataset
@@ -100,31 +99,37 @@ rlog_dds <- rlog(dds)
 
 # PCA Plot 
 plotPCA(rlog_dds)
+ggsave("outputs/PCA/plot/GSE201325_PCA.png")
 
 # PCA data 
 pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
-write.csv(pca_data, "outputs/tables/pca_data.csv", row.names = F)
-write_rds(pca_data, "outputs/tables/pca_data.rds")
+write.csv(pca_data, "outputs/PCA/data/GSE201325_data.csv", row.names = F)
 
 # Differential Gene Expression Analysis 
 dds <- DESeq(dds)
 
-# Get the results
+# Get the results and immediately convert to a standard dataframe
 resdf <- results(dds)
+res_df <- as.data.frame(resdf)
 
-write.csv(resdf, "outputs/tables/res_dds.csv", row.names = F)
-write_rds(resdf, "outputs/tables/res_dds.rds")
+# Rescue the row names (which contain your Gene Symbols/IDs) into a column
+res_df$SYMBOL <- rownames(res_df)
 
+# Fetch gene annotations (Full Description, Gene Biotype) from EnsDb
+annotations <- AnnotationDbi::select(EnsDb.Hsapiens.v86, 
+                                     keys = res_df$SYMBOL,
+                                     keytype = "SYMBOL",
+                                     columns = c("GENENAME", "GENEBIOTYPE"))
 
-# MA plot 
-plotMA(resdf)
+# Remove any accidental duplicate rows from the annotation mapping
+annotations <- annotations[!duplicated(annotations$SYMBOL), ]
 
-# convert as data frame 
-resdf <- as.data.frame(resdf)
-rownames(resdf)
+# Merge annotations into your DESeq2 results data frame
+annotated_res <- merge(res_df, annotations, by = "SYMBOL", all.x = TRUE)
 
-resdf$gene <- rownames(resdf)
-rownames(resdf) <- NULL
+# Clean up the column layout (Move identifiers to the front)
+annotated_res <- annotated_res %>%
+  dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE)
 
-# Save as RDS (for reloading in R later)
-saveRDS(resdf, "outputs/tables/DESeq2_results.rds")
+# Save the final annotated dataset safely!
+write.csv(annotated_res, "outputs/DESeq2/GSE201325_deseq2_results.csv", row.names = FALSE)
