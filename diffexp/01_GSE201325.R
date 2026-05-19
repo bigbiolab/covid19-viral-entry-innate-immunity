@@ -91,7 +91,6 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE201325_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
-
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,

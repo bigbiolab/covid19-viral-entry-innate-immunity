@@ -18,11 +18,11 @@ library(EnsDb.Hsapiens.v86)
 
 # Get the quant files and metadata
 # Collect the sample quant files
-samples <- list.dirs('outputs/salmon_out/GSE201325', recursive = FALSE, full.names = FALSE)
+samples <- list.dirs('outputs/salmon_out/GSE211851', recursive = FALSE, full.names = FALSE)
 samples
 
 # check quant files 
-quant_files <- file.path('outputs/salmon_out/GSE201325', samples, 'quant.sf')
+quant_files <- file.path('outputs/salmon_out/GSE211851', samples, 'quant.sf')
 quant_files
 
 # sample names 
@@ -37,14 +37,14 @@ file.exists(quant_files)
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  condition = c("treated", "treated", "control", "treated", "control", "control")
+  condition = c("nsp13", "vector", "vector", "vector", "nsp13", "nsp13")
 )
 
 # condition as factor 
 col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
-write.csv(col_data, "outputs/metadata/GSE201325_metadata.csv", row.names = FALSE)
+write.csv(col_data, "outputs/metadata/GSE211851_metadata.csv", row.names = FALSE)
 
 # Get the mapping from transcript IDs to gene symbols 
 # What are the columns in the database?
@@ -81,16 +81,15 @@ txi$abundance
 
 # raw counts 
 raw_counts <- txi$counts
-write.csv(raw_counts, "outputs/counts_data/raw_counts/GSE201325_raw_counts.csv", row.names = FALSE)
+write.csv(raw_counts, "outputs/counts_data/raw_counts/GSE211851_raw_counts.csv", row.names = FALSE)
 
 # TPM 
 tpm_counts <- txi$abundance
-write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE201325_tpm_counts.csv", row.names = FALSE)
+write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE211851_tpm_counts.csv", row.names = FALSE)
 
 
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
-
 
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
@@ -102,11 +101,11 @@ rlog_dds <- rlog(dds)
 
 # PCA Plot 
 plotPCA(rlog_dds)
-ggsave("outputs/PCA/plot/GSE201325_PCA.png")
+ggsave("outputs/PCA/plot/GSE211851_PCA.png")
 
 # PCA data 
 pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
-write.csv(pca_data, "outputs/PCA/data/GSE201325_data.csv", row.names = F)
+write.csv(pca_data, "outputs/PCA/data/GSE211851_data.csv", row.names = F)
 
 # Differential Gene Expression Analysis 
 dds <- DESeq(dds)
@@ -135,4 +134,4 @@ annotated_res <- annotated_res %>%
   dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE)
 
 # Save the final annotated dataset safely!
-write.csv(annotated_res, "outputs/DESeq2/GSE201325_deseq2_results.csv", row.names = FALSE)
+write.csv(annotated_res, "outputs/DESeq2/GSE211851_deseq2_results.csv", row.names = FALSE)
