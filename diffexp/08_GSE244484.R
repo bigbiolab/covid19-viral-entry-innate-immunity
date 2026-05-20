@@ -37,7 +37,7 @@ file.exists(quant_files)
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  condition = c("infected", "infected", "infected", "bystander", "bystander", "bystander", "infected", "infected", "infected")
+  condition = c("infected", "infected", "infected", "bystander", "bystander", "bystander", "mock", "mock", "mock")
 )
 
 
