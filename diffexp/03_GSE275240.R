@@ -17,11 +17,11 @@ library(EnsDb.Hsapiens.v86)
 
 # Get the quant files and metadata
 # Collect the sample quant files
-samples <- list.dirs('outputs/salmon_out/GSE245922', recursive = FALSE, full.names = FALSE)
+samples <- list.dirs('outputs/salmon_out/GSE275240', recursive = FALSE, full.names = FALSE)
 samples
 
 # check quant files 
-quant_files <- file.path('outputs/salmon_out/GSE245922', samples, 'quant.sf')
+quant_files <- file.path('outputs/salmon_out/GSE275240', samples, 'quant.sf')
 quant_files
 
 # sample names 
@@ -33,46 +33,42 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create the data frame with row names AND a explicit sample column
-# GSE245922: COVID-19 vs Control, Monocytes, clinical samples
-# Condition: control, covid
-# Note: EN98 has split runs (SRR26436342, SRR26436343)
+# GSE275240: iPSC-derived lung cells
+# Cell type: Alveolar (Alv), Airway (Air)
+# Condition: WT (control), x484, x1371
+# Biological replicates: 3 per group (total 18 samples)
 condition_map <- c(
-  "SRR26436341" = "control",
-  "SRR26436342" = "control",
-  "SRR26436343" = "control",  # split run of EN98
-  "SRR26436344" = "covid19",
-  "SRR26436345" = "covid19",
-  "SRR26436346" = "control",
-  "SRR26436347" = "covid19",
-  "SRR26436348" = "covid19"
+  "DRR456169"="WT",   "DRR456170"="x484",  "DRR456171"="x1371",  # 1-Alv
+  "DRR456172"="WT",   "DRR456173"="x484",  "DRR456174"="x1371",  # 2-Alv
+  "DRR456175"="WT",   "DRR456176"="x484",  "DRR456177"="x1371",  # 3-Alv
+  "DRR456178"="WT",   "DRR456179"="x484",  "DRR456180"="x1371",  # 1-Air
+  "DRR456181"="WT",   "DRR456182"="x484",  "DRR456183"="x1371",  # 2-Air
+  "DRR456184"="WT",   "DRR456185"="x484",  "DRR456186"="x1371"   # 3-Air
 )
 
-gsm_map <- c(
-  "SRR26436341" = "EN100",
-  "SRR26436342" = "EN98",
-  "SRR26436343" = "EN98",     # split run
-  "SRR26436344" = "EN96",
-  "SRR26436345" = "EN83",
-  "SRR26436346" = "EN78",
-  "SRR26436347" = "EN70",
-  "SRR26436348" = "EN69"
+celltype_map <- c(
+  "DRR456169"="Alv", "DRR456170"="Alv", "DRR456171"="Alv",
+  "DRR456172"="Alv", "DRR456173"="Alv", "DRR456174"="Alv",
+  "DRR456175"="Alv", "DRR456176"="Alv", "DRR456177"="Alv",
+  "DRR456178"="Air", "DRR456179"="Air", "DRR456180"="Air",
+  "DRR456181"="Air", "DRR456182"="Air", "DRR456183"="Air",
+  "DRR456184"="Air", "DRR456185"="Air", "DRR456186"="Air"
 )
 
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  patient   = gsm_map[samples],
-  condition = factor(condition_map[samples],
-                     levels = c("control", "covid19"))
+  celltype  = factor(celltype_map[samples], levels = c("Alv", "Air")),
+  condition = factor(condition_map[samples], levels = c("WT", "x484", "x1371"))
 )
 
-# condition as factor (control = reference)
-col_data$condition <- factor(col_data$condition,
-                             levels = c("control", "covid19"))
+# condition as factor (WT = reference)
+col_data$condition <- factor(col_data$condition, levels = c("WT", "x484", "x1371"))
+col_data$celltype  <- factor(col_data$celltype,  levels = c("Alv", "Air"))
 
 
 # Export metadata for later use 
-write.csv(col_data, "outputs/metadata/GSE245922_metadata.csv", row.names = FALSE)
+write.csv(col_data, "outputs/metadata/GSE275240_metadata.csv", row.names = FALSE)
 
 # Get the mapping from transcript IDs to gene symbols 
 # What are the columns in the database?
@@ -109,11 +105,11 @@ txi$abundance
 
 # raw counts 
 raw_counts <- txi$counts
-write.csv(raw_counts, "outputs/counts_data/raw_counts/GSE245922_raw_counts.csv", row.names = FALSE)
+write.csv(raw_counts, "outputs/counts_data/raw_counts/GSE275240_raw_counts.csv", row.names = FALSE)
 
 # TPM 
 tpm_counts <- txi$abundance
-write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE245922_tpm_counts.csv", row.names = FALSE)
+write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE275240_tpm_counts.csv", row.names = FALSE)
 
 
 # This must return TRUE before you proceed
@@ -123,30 +119,27 @@ all(colnames(txi) == rownames(col_data))
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
-                                design = ~condition)
+                                design = ~celltype + condition)
 
-# Split run merge
-dds_collapsed <- collapseReplicates(dds,
-                                    groupby = col_data$patient,
-                                    run     = col_data$sample)
+
 # Principal Component Analysis
-rlog_dds <- rlog(dds_collapsed)
+rlog_dds <- rlog(dds)
 
 # PCA Plot
 plotPCA(rlog_dds, intgroup = "condition")
-ggsave("outputs/PCA/plot/GSE245922_PCA.png")
+ggsave("outputs/PCA/plot/GSE275240_PCA.png")
 
 ## PCA data
 pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
-write.csv(pca_data, "outputs/PCA/data/GSE245922_data.csv", row.names = FALSE)
+write.csv(pca_data, "outputs/PCA/data/GSE275240_data.csv", row.names = FALSE)
 
 
 # Differential Gene Expression Analysis
-dds_collapsed <- DESeq(dds_collapsed)
+dds <- DESeq(dds)
 
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds_collapsed)
+resdf <- results(dds)
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
@@ -169,4 +162,4 @@ annotated_res <- annotated_res %>%
   dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE)
 
 # Save the final annotated dataset safely!
-write.csv(annotated_res, "outputs/DESeq2/GSE245922_deseq2_results.csv", row.names = FALSE)
+write.csv(annotated_res, "outputs/DESeq2/GSE275240_deseq2_results.csv", row.names = FALSE)
