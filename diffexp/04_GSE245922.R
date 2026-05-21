@@ -5,6 +5,9 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
+#    GSE245922: COVID-19 vs Control, Monocytes, clinical samples
+#    Condition: control, covid
+#    Note: EN98 has split runs (SRR26436342, SRR26436343)
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -32,13 +35,13 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
-# Create the data frame with row names AND a explicit sample column
+# Create Metadata (col_data)
 # GSE245922: COVID-19 vs Control, Monocytes, clinical samples
 # Condition: control, covid
 # Note: EN98 has split runs (SRR26436342, SRR26436343)
 condition_map <- c(
   "SRR26436341" = "control",
-  "SRR26436342" = "control",
+  "SRR26436342" = "control",  # split run of EN98 (Library Name EN99 in SRA)
   "SRR26436343" = "control",  # split run of EN98
   "SRR26436344" = "covid19",
   "SRR26436345" = "covid19",
@@ -49,7 +52,7 @@ condition_map <- c(
 
 gsm_map <- c(
   "SRR26436341" = "EN100",
-  "SRR26436342" = "EN98",
+  "SRR26436342" = "EN98",     # same BioSample as SRR26436343
   "SRR26436343" = "EN98",     # split run
   "SRR26436344" = "EN96",
   "SRR26436345" = "EN83",
@@ -57,18 +60,14 @@ gsm_map <- c(
   "SRR26436347" = "EN70",
   "SRR26436348" = "EN69"
 )
-
+# Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
   patient   = gsm_map[samples],
   condition = factor(condition_map[samples],
-                     levels = c("control", "covid19"))
+                     levels = c("control", "covid19"))    # control = reference level
 )
-
-# condition as factor (control = reference)
-col_data$condition <- factor(col_data$condition,
-                             levels = c("control", "covid19"))
 
 
 # Export metadata for later use 
