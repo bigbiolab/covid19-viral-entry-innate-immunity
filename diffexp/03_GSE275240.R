@@ -5,6 +5,8 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
+#     Dataset: GSE275240 — iPSC-derived lung cells (Alveolar vs Airway)
+#     Conditions: WT (control), x484, x1371
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -32,7 +34,7 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
-# Create the data frame with row names AND a explicit sample column
+# Create Metadata (col_data)
 # GSE275240: iPSC-derived lung cells
 # Cell type: Alveolar (Alv), Airway (Air)
 # Condition: WT (control), x484, x1371
@@ -45,7 +47,6 @@ condition_map <- c(
   "DRR456181"="WT",   "DRR456182"="x484",  "DRR456183"="x1371",  # 2-Air
   "DRR456184"="WT",   "DRR456185"="x484",  "DRR456186"="x1371"   # 3-Air
 )
-
 celltype_map <- c(
   "DRR456169"="Alv", "DRR456170"="Alv", "DRR456171"="Alv",
   "DRR456172"="Alv", "DRR456173"="Alv", "DRR456174"="Alv",
@@ -54,17 +55,13 @@ celltype_map <- c(
   "DRR456181"="Air", "DRR456182"="Air", "DRR456183"="Air",
   "DRR456184"="Air", "DRR456185"="Air", "DRR456186"="Air"
 )
-
+# Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
   celltype  = factor(celltype_map[samples], levels = c("Alv", "Air")),
   condition = factor(condition_map[samples], levels = c("WT", "x484", "x1371"))
 )
-
-# condition as factor (WT = reference)
-col_data$condition <- factor(col_data$condition, levels = c("WT", "x484", "x1371"))
-col_data$celltype  <- factor(col_data$celltype,  levels = c("Alv", "Air"))
 
 
 # Export metadata for later use 
@@ -163,3 +160,5 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE275240_deseq2_results.csv", row.names = FALSE)
+
+
