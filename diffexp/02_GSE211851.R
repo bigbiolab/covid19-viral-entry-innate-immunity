@@ -2,9 +2,12 @@
 # Author: Md. Jubayer Hossain
 # Affiliation: DeepBio Limited | CHIRAL Bangladesh
 # Date: May 2026
+
 # Description:
-#   Imports transcript-level quantifications from Salmon
-#   and summarizes to gene-level counts for DESeq2. 
+#  Imports transcript-level quantifications from Salmon
+#  and summarizes to gene-level counts for DESeq2.
+#   Dataset: GSE211851 — SARS-CoV-2 nsp13 overexpression in HEK293T cells
+#   Conditions: vector (control), nsp13 
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -33,15 +36,25 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
+# Create Metadata (col_data)
+# GSE211851: SARS-CoV-2 nsp13 overexpression in HEK293T cells
+# Condition: vector (control), nsp13
+# Replicates: 3 per group (total 6 samples)
+condition_map <- c(
+  "SRR21170613" = "nsp13",
+  "SRR21170614" = "vector",
+  "SRR21170615" = "vector",
+  "SRR21170616" = "vector",
+  "SRR21170617" = "nsp13",
+  "SRR21170618" = "nsp13"
+)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  condition = c("nsp13", "vector", "vector", "vector", "nsp13", "nsp13")
+  condition = factor(condition_map[samples],
+                     levels = c("vector", "nsp13"))  # vector = reference
 )
-
-# condition as factor 
-col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE211851_metadata.csv", row.names = FALSE)
@@ -100,7 +113,7 @@ dds <- DESeqDataSetFromTximport(txi = txi,
 rlog_dds <- rlog(dds)
 
 # PCA Plot 
-plotPCA(rlog_dds)
+plotPCA(rlog_dds, intgroup = "condition")
 ggsave("outputs/PCA/plot/GSE211851_PCA.png")
 
 # PCA data 
@@ -111,7 +124,7 @@ write.csv(pca_data, "outputs/PCA/data/GSE211851_data.csv", row.names = F)
 dds <- DESeq(dds)
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds)
+resdf  <- results(dds, contrast = c("condition", "nsp13", "vector"))
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
