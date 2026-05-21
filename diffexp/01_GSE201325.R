@@ -38,7 +38,9 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create Metadata (col_data)
-
+# Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
+# Condition: control (control plasmid), treated (spike protein 100nM)
+# Replicates: 3 per group (total 6 samples)
 condition_map <- c(
   "SRR18889440" = "treated",
   "SRR18889441" = "treated",
