@@ -1,7 +1,7 @@
-sample,condition
-SRR18889440,treated
-SRR18889441,treated
-SRR18889442,control
-SRR18889443,treated
-SRR18889444,control
-SRR18889445,control
+"sample","condition"
+"SRR18889440","treated"
+"SRR18889441","treated"
+"SRR18889442","control"
+"SRR18889443","treated"
+"SRR18889444","control"
+"SRR18889445","control"

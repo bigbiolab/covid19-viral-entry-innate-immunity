@@ -2,9 +2,13 @@
 # Author: Md. Jubayer Hossain
 # Affiliation: DeepBio Limited | CHIRAL Bangladesh
 # Date: May 2026
+
 # Description:
-#   Imports transcript-level quantifications from Salmon
-#   and summarizes to gene-level counts for DESeq2. 
+#  Imports transcript-level quantification from Salmon
+#  and summarizes to gene-level counts for DESeq2. 
+#    Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
+#    Condition: control (control plasmid), treated (spike protein 100nM)
+#    Replicates: 3 per group (total 6 samples)
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -33,15 +37,23 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
+# Create Metadata (col_data)
+
+condition_map <- c(
+  "SRR18889440" = "treated",
+  "SRR18889441" = "treated",
+  "SRR18889442" = "control",
+  "SRR18889443" = "treated",
+  "SRR18889444" = "control",
+  "SRR18889445" = "control"
+)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  condition = c("treated", "treated", "control", "treated", "control", "control")
-)
+  condition = factor(condition_map[samples],
+                     levels = c("control", "treated")))  # control = reference
 
-# condition as factor 
-col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE201325_metadata.csv", row.names = FALSE)
@@ -100,7 +112,7 @@ dds <- DESeqDataSetFromTximport(txi = txi,
 rlog_dds <- rlog(dds)
 
 # PCA Plot 
-plotPCA(rlog_dds)
+plotPCA(rlog_dds, intgroup = "condition")
 ggsave("outputs/PCA/plot/GSE201325_PCA.png")
 
 # PCA data 
@@ -111,7 +123,7 @@ write.csv(pca_data, "outputs/PCA/data/GSE201325_data.csv", row.names = F)
 dds <- DESeq(dds)
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds)
+resdf <- results(dds, contrast = c("condition", "treated", "control"))
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
