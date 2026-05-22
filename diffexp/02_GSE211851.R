@@ -8,6 +8,7 @@
 #  and summarizes to gene-level counts for DESeq2.
 #   Dataset: GSE211851 — SARS-CoV-2 nsp13 overexpression in HEK293T cells
 #   Conditions: vector (control), nsp13 
+#   BioProject: PRJNA872361
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -48,10 +49,21 @@ condition_map <- c(
   "SRR21170617" = "nsp13",
   "SRR21170618" = "nsp13"
 )
+gsm_map <- c(
+  "SRR21170614" = "GSM6503401",
+  "SRR21170615" = "GSM6503402",
+  "SRR21170616" = "GSM6503400",
+  "SRR21170613" = "GSM6503404",
+  "SRR21170617" = "GSM6503403",
+  "SRR21170618" = "GSM6503405"
+)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
+  gsm       = gsm_map[samples],
+  cell_line = "HEK293T",
+  treatment_time  = "24h",
   condition = factor(condition_map[samples],
                      levels = c("vector", "nsp13"))  # vector = reference
 )
