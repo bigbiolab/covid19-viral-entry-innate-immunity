@@ -7,7 +7,8 @@
 #  Imports transcript-level quantification from Salmon
 #  and summarizes to gene-level counts for DESeq2. 
 #    Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
-#    Condition: control (control plasmid), treated (spike protein 100nM)
+#    Tissue    : Lung
+#    Condition: control (control plasmid), treated (SARS-CoV-2 spike protein 100nM)
 #    Replicates: 3 per group (total 6 samples)
 
 # Install Bioconductor Packages 
@@ -39,12 +40,12 @@ file.exists(quant_files)
 
 # Create Metadata (col_data)
 # Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
-# Condition: control (control plasmid), treated (spike protein 100nM)
+# Condition: control (control plasmid), treated (SARS-CoV-2 spike protein 100nM)
 # Replicates: 3 per group (total 6 samples)
 condition_map <- c(
-  "SRR18889440" = "treated",
+  "SRR18889440" = "treated",     # spike protein 100nM
   "SRR18889441" = "treated",
-  "SRR18889442" = "control",
+  "SRR18889442" = "control",     # control plasmid
   "SRR18889443" = "treated",
   "SRR18889444" = "control",
   "SRR18889445" = "control"
@@ -53,6 +54,8 @@ condition_map <- c(
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
+  tissue    = "lung",
+  cell_line = "Calu-3",
   condition = factor(condition_map[samples],
                      levels = c("control", "treated")))  # control = reference
 
