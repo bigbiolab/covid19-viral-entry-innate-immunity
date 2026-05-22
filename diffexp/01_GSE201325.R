@@ -51,10 +51,19 @@ condition_map <- c(
   "SRR18889444" = "control",
   "SRR18889445" = "control"
 )
+gsm_map <- c(
+  "SRR18889442" = "GSM6058589",
+  "SRR18889444" = "GSM6058588",
+  "SRR18889445" = "GSM6058587",
+  "SRR18889440" = "GSM6058592",
+  "SRR18889441" = "GSM6058590",
+  "SRR18889443" = "GSM6058591"
+)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
+  gsm       = gsm_map[samples],
   tissue    = "lung",
   cell_line = "Calu-3",
   condition = factor(condition_map[samples],
