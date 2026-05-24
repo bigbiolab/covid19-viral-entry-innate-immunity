@@ -5,6 +5,11 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
+#     GSE217504: SARS-CoV-2 infection in Caco-2 cells
+#     Conditions: mock (control), infected (SARS-CoV-2)
+#     Time points: mock → 4h, 12h, 48h | infected → 0h, 1h, 2h, 4h, 7h, 12h, 24h, 48h
+#     Replicates: 3 per condition per time point (total 33 samples)
+#     BioProject: PRJNA899119
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -38,6 +43,7 @@ file.exists(quant_files)
 # Conditions: mock (control), infected (SARS-CoV-2)
 # Time points: mock → 4h, 12h, 48h | infected → 0h, 1h, 2h, 4h, 7h, 12h, 24h, 48h
 # Replicates: 3 per condition per time point (total 33 samples)
+# # Cell line : Caco-2
 col_data <- data.frame(
   row.names = samples,
   condition = factor(c(rep("mock", 9),       # SRR22223232–240

@@ -6,6 +6,7 @@
 # Description:
 #  Imports transcript-level quantification from Salmon
 #  and summarizes to gene-level counts for DESeq2. 
+
 #    Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
 #    Tissue : Lung
 #    Condition: control (control plasmid), treated (SARS-CoV-2 spike protein 100nM)
