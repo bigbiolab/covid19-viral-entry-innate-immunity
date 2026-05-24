@@ -6,8 +6,10 @@
 # Description:
 #  Imports transcript-level quantifications from Salmon
 #  and summarizes to gene-level counts for DESeq2.
+
 #   Dataset: GSE211851 — SARS-CoV-2 nsp13 overexpression in HEK293T cells
 #   Conditions: vector (control), nsp13 
+#   Replicates: 3 per group (total 6 samples)
 #   BioProject: PRJNA872361
 
 # Install Bioconductor Packages 
@@ -39,7 +41,8 @@ file.exists(quant_files)
 
 # Create Metadata (col_data)
 # GSE211851: SARS-CoV-2 nsp13 overexpression in HEK293T cells
-# Condition: vector (control), nsp13
+# Condition: vector (empty vector control), nsp13 (SARS-CoV-2 nsp13 overexpression)
+# Treatment time: 24h
 # Replicates: 3 per group (total 6 samples)
 condition_map <- c(
   "SRR21170613" = "nsp13",
@@ -50,10 +53,10 @@ condition_map <- c(
   "SRR21170618" = "nsp13"
 )
 gsm_map <- c(
+  "SRR21170613" = "GSM6503404",
   "SRR21170614" = "GSM6503401",
   "SRR21170615" = "GSM6503402",
   "SRR21170616" = "GSM6503400",
-  "SRR21170613" = "GSM6503404",
   "SRR21170617" = "GSM6503403",
   "SRR21170618" = "GSM6503405"
 )
