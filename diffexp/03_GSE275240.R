@@ -5,8 +5,12 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
-#     Dataset: GSE275240 — iPSC-derived lung cells (Alveolar vs Airway)
-#     Conditions: WT (control), x484, x1371
+
+# Dataset  : GSE275240 — iPSC-derived lung cells (Alveolar vs Airway)
+# Cell type: Alveolar (Alv), Airway (Air)
+# Condition: WT (control), x484, x1371
+# Replicates: 3 per group (total 18 samples)
+# BioProject: PRJDB15620
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -35,10 +39,10 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create Metadata (col_data)
-# GSE275240: iPSC-derived lung cells
+# Dataset  : GSE275240 — iPSC-derived lung cells (Alveolar vs Airway)
 # Cell type: Alveolar (Alv), Airway (Air)
 # Condition: WT (control), x484, x1371
-# Biological replicates: 3 per group (total 18 samples)
+# Replicates: 3 per group (total 18 samples)
 condition_map <- c(
   "DRR456169"="WT",   "DRR456170"="x484",  "DRR456171"="x1371",  # 1-Alv
   "DRR456172"="WT",   "DRR456173"="x484",  "DRR456174"="x1371",  # 2-Alv
@@ -55,13 +59,22 @@ celltype_map <- c(
   "DRR456181"="Air", "DRR456182"="Air", "DRR456183"="Air",
   "DRR456184"="Air", "DRR456185"="Air", "DRR456186"="Air"
 )
+gsm_map <- c(
+  "DRR456169" = "GSM8473291", "DRR456170" = "GSM8473292", "DRR456171" = "GSM8473293",
+  "DRR456172" = "GSM8473294", "DRR456173" = "GSM8473295", "DRR456174" = "GSM8473296",
+  "DRR456175" = "GSM8473297", "DRR456176" = "GSM8473298", "DRR456177" = "GSM8473299",
+  "DRR456178" = "GSM8473300", "DRR456179" = "GSM8473301", "DRR456180" = "GSM8473302",
+  "DRR456181" = "GSM8473303", "DRR456182" = "GSM8473304", "DRR456183" = "GSM8473305",
+  "DRR456184" = "GSM8473306", "DRR456185" = "GSM8473307", "DRR456186" = "GSM8473308"
+)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
+  gsm       = gsm_map[samples],
+  cell_line = "iPSC",
   celltype  = factor(celltype_map[samples], levels = c("Alv", "Air")),
-  condition = factor(condition_map[samples], levels = c("WT", "x484", "x1371"))
-)
+  condition = factor(condition_map[samples], levels = c("WT", "x484", "x1371")))  # WT = reference level for all comparisons
 
 
 # Export metadata for later use 
@@ -123,11 +136,11 @@ dds <- DESeqDataSetFromTximport(txi = txi,
 rlog_dds <- rlog(dds)
 
 # PCA Plot
-plotPCA(rlog_dds, intgroup = "condition")
+plotPCA(rlog_dds, intgroup = c("condition", "celltype"))
 ggsave("outputs/PCA/plot/GSE275240_PCA.png")
 
 ## PCA data
-pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
+pca_data <- plotPCA(rlog_dds, intgroup = c("condition", "celltype"), returnData = TRUE)
 write.csv(pca_data, "outputs/PCA/data/GSE275240_data.csv", row.names = FALSE)
 
 
@@ -135,8 +148,67 @@ write.csv(pca_data, "outputs/PCA/data/GSE275240_data.csv", row.names = FALSE)
 dds <- DESeq(dds)
 
 
+# Extract Results for Each Comparison
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds)
+
+# Extract DESeq2 results and add prefix to stat columns
+get_results_df <- function(dds, contrast, prefix) {
+  res    <- results(dds, contrast = contrast)
+  res_df <- as.data.frame(res)
+  res_df$SYMBOL <- rownames(res_df)
+  
+  # Add prefix to stat columns so both comparisons can sit side by side
+  # baseMean is shared (same model), so kept only once
+  res_df <- res_df %>%
+    dplyr::select(SYMBOL, baseMean,
+                  log2FoldChange, lfcSE, stat, pvalue, padj) %>%
+    dplyr::rename(
+      !!paste0(prefix, "_log2FC")  := log2FoldChange,
+      !!paste0(prefix, "_lfcSE")   := lfcSE,
+      !!paste0(prefix, "_stat")    := stat,
+      !!paste0(prefix, "_pvalue")  := pvalue,
+      !!paste0(prefix, "_padj")    := padj
+    )
+  return(res_df)
+}
+
+res_x484  <- get_results_df(dds,
+                            contrast = c("condition", "x484",  "WT"),
+                            prefix   = "x484_vs_WT")
+
+res_x1371 <- get_results_df(dds,
+                            contrast = c("condition", "x1371", "WT"),
+                            prefix   = "x1371_vs_WT") %>%
+  dplyr::select(-baseMean)  # baseMean already in res_x484, drop duplicate
+
+
+# ── 12. Merge Both Comparisons into One Table ─────────────────────────────────
+combined_res <- full_join(res_x484, res_x1371, by = "SYMBOL")
+
+
+# ── 13. Annotate ──────────────────────────────────────────────────────────────
+annotations <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys    = combined_res$SYMBOL,
+  keytype = "SYMBOL",
+  columns = c("GENENAME", "GENEBIOTYPE")
+)
+annotations <- annotations[!duplicated(annotations$SYMBOL), ]
+
+annotated_res <- merge(combined_res, annotations, by = "SYMBOL", all.x = TRUE) %>%
+  dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE, baseMean)
+
+
+# ── 14. Save Final Results ────────────────────────────────────────────────────
+write.csv(annotated_res,
+          "outputs/DESeq2/GSE275240_deseq2_results.csv",
+          row.names = FALSE)
+
+
+
+# Extract Results for Each Comparison
+# Get the results and immediately convert to a standard dataframe
+resdf  <- results(dds)
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
@@ -160,5 +232,6 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE275240_deseq2_results.csv", row.names = FALSE)
+
 
 
