@@ -8,8 +8,8 @@
         "ISR"
     ],
     "frag_dist_length": 1001,
-    "frag_length_mean": 140.41061146869994,
-    "frag_length_sd": 45.99045680820046,
+    "frag_length_mean": 140.28715411048948,
+    "frag_length_sd": 45.97778764983432,
     "seq_bias_correct": false,
     "gc_bias_correct": false,
     "num_bias_bins": 4096,
@@ -17,7 +17,7 @@
     "keep_duplicates": false,
     "num_valid_targets": 238442,
     "num_decoy_targets": 194,
-    "num_eq_classes": 150053,
+    "num_eq_classes": 150087,
     "serialized_eq_classes": false,
     "eq_class_properties": [
         "range_factorized",
@@ -38,13 +38,13 @@
     "index_decoy_name_hash": "5fc84a462ccf4735efdc48604a520ee47e1319156c2a5c252f5daba1e99bb401",
     "num_bootstraps": 0,
     "num_processed": 11983288,
-    "num_mapped": 8427290,
+    "num_mapped": 8427286,
     "num_decoy_fragments": 427661,
     "num_dovetail_fragments": 247093,
     "num_fragments_filtered_vm": 795543,
     "num_alignments_below_threshold_for_mapped_fragments_vm": 9973723,
-    "percent_mapped": 70.32535644641104,
+    "percent_mapped": 70.32532306659074,
     "call": "quant",
-    "start_time": "Sun May 03 08:54:58 2026",
-    "end_time": "Sun May 03 09:12:26 2026"
+    "start_time": "Mon May 25 19:36:47 2026",
+    "end_time": "Mon May 25 19:52:58 2026"
 }
