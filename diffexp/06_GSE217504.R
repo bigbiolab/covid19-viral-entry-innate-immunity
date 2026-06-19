@@ -5,11 +5,6 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
-#     GSE217504: SARS-CoV-2 infection in Caco-2 cells
-#     Conditions: mock (control), infected (SARS-CoV-2)
-#     Time points: mock → 4h, 12h, 48h | infected → 0h, 1h, 2h, 4h, 7h, 12h, 24h, 48h
-#     Replicates: 3 per condition per time point (total 33 samples)
-#     BioProject: PRJNA899119
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -39,32 +34,19 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create the data frame with row names AND a explicit sample column
-# GSE217504: SARS-CoV-2 infection in Caco-2 cells
-# Conditions: mock (control), infected (SARS-CoV-2)
-# Time points: mock → 4h, 12h, 48h | infected → 0h, 1h, 2h, 4h, 7h, 12h, 24h, 48h
-# Replicates: 3 per condition per time point (total 33 samples)
-# # Cell line : Caco-2
 col_data <- data.frame(
   row.names = samples,
-  condition = factor(c(rep("mock", 9),       # SRR22223232–240
-                       rep("infected", 24)),   # SRR22223241–264
-              levels = c("mock", "infected")),
-  timepoint = factor(c(
-              # mock (9 samples)
-              "48h", "48h", "48h", "12h", "12h", "12h", "4h",  "4h",  "4h",
-              # infected (24 samples)
-              "48h", "48h", "48h", "24h", "24h", "24h", "12h", "12h", "12h", "7h",  "7h",  "7h", 
-              "4h",  "4h",  "4h", "2h",  "2h",  "2h", "1h",  "1h",  "1h", "0h",  "0h",  "0h"), 
-              levels = c("0h", "1h", "2h", "4h", "7h", "12h", "24h", "48h")))
+  sample    = samples,
+  condition = c("mock_48h", "mock_48h", "mock_12h", "mock_12h", "mock_12h", "mock_12h",
+                "mock_4h", "mock_4h", "mock_4h", "infected_48h", "infected_48h", "infected_48h",
+                "infected_24h", "infected_24h", "infected_24h", "infected_12h", "infected_12h", "infected_12h",
+                "infected_7h", "infected_7h", "infected_7h", "infected_4h", "infected_4h", "infected_4h",
+                "infected_2h", "infected_2h", "infected_2h", "infected_1h", "infected_1h", "infected_1h",
+                "infected_0h", "infected_0h", "infected_0h")
+)
 
-# condition as factor (mock = reference)
-col_data$condition <- factor(col_data$condition,
-                             levels = c("mock", "infected"))
-
-# timepoint as factor (0h = reference)
-col_data$timepoint <- factor(col_data$timepoint,
-                             levels = c("0h", "1h", "2h", "4h", "7h", "12h", "24h", "48h"))
-
+# condition as factor 
+col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE217504_metadata.csv", row.names = FALSE)
@@ -114,6 +96,7 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE217504_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
+
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
@@ -152,9 +135,10 @@ annotations <- annotations[!duplicated(annotations$SYMBOL), ]
 # Merge annotations into your DESeq2 results data frame
 annotated_res <- merge(res_df, annotations, by = "SYMBOL", all.x = TRUE)
 
-# Clean up the column layout (Move identifiers to the front)
+# clean up the column layout (Move identifiers to the front)
 annotated_res <- annotated_res %>%
   dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE)
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE217504_deseq2_results.csv", row.names = FALSE)
+

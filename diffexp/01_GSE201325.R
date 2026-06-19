@@ -2,16 +2,9 @@
 # Author: Md. Jubayer Hossain
 # Affiliation: DeepBio Limited | CHIRAL Bangladesh
 # Date: May 2026
-
 # Description:
-#  Imports transcript-level quantification from Salmon
-#  and summarizes to gene-level counts for DESeq2. 
-
-#    Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
-#    Tissue : Lung
-#    Condition: control (control plasmid), treated (SARS-CoV-2 spike protein 100nM)
-#    Replicates: 3 per group (total 6 samples)
-#    BioProject: PRJNA830876
+#   Imports transcript-level quantifications from Salmon
+#   and summarizes to gene-level counts for DESeq2. 
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -40,36 +33,15 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
-# Create Metadata (col_data)
-# Dataset: GSE201325 — SARS-CoV-2 spike protein treatment in Calu-3 cells
-# Condition: control (control plasmid), treated (SARS-CoV-2 spike protein 100nM)
-# Replicates: 3 per group (total 6 samples)
-condition_map <- c(
-  "SRR18889440" = "treated",     # spike protein 100nM
-  "SRR18889441" = "treated",
-  "SRR18889442" = "control",     # control plasmid
-  "SRR18889443" = "treated",
-  "SRR18889444" = "control",
-  "SRR18889445" = "control"
-)
-gsm_map <- c(
-  "SRR18889442" = "GSM6058589",
-  "SRR18889444" = "GSM6058588",
-  "SRR18889445" = "GSM6058587",
-  "SRR18889440" = "GSM6058592",
-  "SRR18889441" = "GSM6058590",
-  "SRR18889443" = "GSM6058591"
-)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  gsm       = gsm_map[samples],
-  tissue    = "lung",
-  cell_line = "Calu-3",
-  condition = factor(condition_map[samples],
-                     levels = c("control", "treated")))  # control = reference
+  condition = c("treated", "treated", "control", "treated", "control", "control")
+)
 
+# condition as factor 
+col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE201325_metadata.csv", row.names = FALSE)
@@ -119,6 +91,7 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE201325_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
+
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
@@ -128,7 +101,7 @@ dds <- DESeqDataSetFromTximport(txi = txi,
 rlog_dds <- rlog(dds)
 
 # PCA Plot 
-plotPCA(rlog_dds, intgroup = "condition")
+plotPCA(rlog_dds)
 ggsave("outputs/PCA/plot/GSE201325_PCA.png")
 
 # PCA data 
@@ -139,7 +112,7 @@ write.csv(pca_data, "outputs/PCA/data/GSE201325_data.csv", row.names = F)
 dds <- DESeq(dds)
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds, contrast = c("condition", "treated", "control"))
+resdf <- results(dds)
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
@@ -163,3 +136,4 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE201325_deseq2_results.csv", row.names = FALSE)
+

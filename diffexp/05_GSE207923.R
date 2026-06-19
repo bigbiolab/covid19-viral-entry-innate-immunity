@@ -34,73 +34,22 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create the data frame with row names AND a explicit sample column
-# GSE207923: SARS-CoV-2 infection in NHBE cells
-# Conditions: Mock, USA-WA1/2020 (WA1), New York 1-PV08001/2020 (NY1)
-# Time points: 6hpi, 12hpi, 24hpi
-# Note: Some GSMs have multiple SRRs (split runs)
-infection_map <- c(
-  "SRR20079510"="Mock", "SRR20079511"="Mock", "SRR20079512"="Mock",
-  "SRR20079513"="Mock", "SRR20079514"="Mock", "SRR20079515"="Mock",
-  "SRR20079516"="Mock", "SRR20079517"="Mock", "SRR20079518"="Mock",
-  "SRR20079519"="Mock", "SRR20079520"="Mock", "SRR20079521"="Mock",
-  "SRR20079522"="WA1",  "SRR20079523"="WA1",  "SRR20079524"="WA1",
-  "SRR20079525"="WA1",  "SRR20079526"="WA1",  "SRR20079527"="WA1",
-  "SRR20079528"="WA1",  "SRR20079529"="WA1",  "SRR20079530"="WA1",
-  "SRR20079531"="WA1",  "SRR20079532"="NY1",  "SRR20079533"="NY1",
-  "SRR20079534"="NY1",  "SRR20079535"="NY1",  "SRR20079536"="NY1",
-  "SRR20079537"="NY1",  "SRR20079538"="NY1",  "SRR20079539"="NY1",
-  "SRR20079540"="NY1",  "SRR20079541"="NY1",  "SRR20079542"="NY1",
-  "SRR20079543"="NY1"
-)
-time_map <- c(
-  "SRR20079510"="24hpi", "SRR20079511"="24hpi", "SRR20079512"="24hpi",
-  "SRR20079513"="24hpi", "SRR20079514"="12hpi", "SRR20079515"="12hpi",
-  "SRR20079516"="12hpi", "SRR20079517"="12hpi", "SRR20079518"="6hpi",
-  "SRR20079519"="6hpi",  "SRR20079520"="6hpi",  "SRR20079521"="6hpi",
-  "SRR20079522"="24hpi", "SRR20079523"="24hpi", "SRR20079524"="24hpi",
-  "SRR20079525"="12hpi", "SRR20079526"="12hpi", "SRR20079527"="12hpi",
-  "SRR20079528"="6hpi",  "SRR20079529"="6hpi",  "SRR20079530"="6hpi",
-  "SRR20079531"="6hpi",  "SRR20079532"="24hpi", "SRR20079533"="24hpi",
-  "SRR20079534"="24hpi", "SRR20079535"="24hpi", "SRR20079536"="12hpi",
-  "SRR20079537"="12hpi", "SRR20079538"="12hpi", "SRR20079539"="12hpi",
-  "SRR20079540"="6hpi",  "SRR20079541"="6hpi",  "SRR20079542"="6hpi",
-  "SRR20079543"="6hpi"
-)
-gsm_map <- c(
-  "SRR20079510"="GSM6323035", "SRR20079511"="GSM6323034",
-  "SRR20079512"="GSM6323033", "SRR20079513"="GSM6323033",
-  "SRR20079514"="GSM6323032", "SRR20079515"="GSM6323032",
-  "SRR20079516"="GSM6323031", "SRR20079517"="GSM6323030",
-  "SRR20079518"="GSM6323029", "SRR20079519"="GSM6323028",
-  "SRR20079520"="GSM6323027", "SRR20079521"="GSM6323027",
-  "SRR20079522"="GSM6323026", "SRR20079523"="GSM6323025",
-  "SRR20079524"="GSM6323024", "SRR20079525"="GSM6323023",
-  "SRR20079526"="GSM6323022", "SRR20079527"="GSM6323021",
-  "SRR20079528"="GSM6323020", "SRR20079529"="GSM6323019",
-  "SRR20079530"="GSM6323018", "SRR20079531"="GSM6323018",
-  "SRR20079532"="GSM6323017", "SRR20079533"="GSM6323016",
-  "SRR20079534"="GSM6323015", "SRR20079535"="GSM6323015",
-  "SRR20079536"="GSM6323014", "SRR20079537"="GSM6323013",
-  "SRR20079538"="GSM6323012", "SRR20079539"="GSM6323012",
-  "SRR20079540"="GSM6323011", "SRR20079541"="GSM6323010",
-  "SRR20079542"="GSM6323009", "SRR20079543"="GSM6323009"
-)
-
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  GSM       = gsm_map[samples],
-  condition = factor(infection_map[samples], levels = c("Mock", "WA1", "NY1")),
-  timepoint = factor(time_map[samples],      levels = c("6hpi", "12hpi", "24hpi"))
+  condition = c("mock_24hpi", "mock_24hpi", "mock_24hpi", "mock_24hpi",
+                "mock_12hpi", "mock_12hpi", "mock_12hpi", "mock_12hpi", "mock_12hpi",
+                "mock_6hpi", "mock_6hpi", "mock_6hpi",
+                "usawa1_24hpi", "usawa1_24hpi", "usawa1_24hpi",
+                "usawa1_12hpi", "usawa1_12hpi", "usawa1_12hpi",
+                "usawa1_6hpi", "usawa1_6hpi", "usawa1_6hpi", "usawa1_6hpi",
+                "newyork1_24hpi", "newyork1_24hpi", "newyork1_24hpi", "newyork1_24hpi",
+                "newyork1_12hpi", "newyork1_12hpi", "newyork1_12hpi", "newyork1_12hpi",
+                "newyork1_6hpi", "newyork1_6hpi", "newyork1_6hpi", "newyork1_6hpi")
 )
 
-# infection as factor (Mock = reference)
-col_data$infection <- factor(col_data$condition,
-                             levels = c("Mock", "WA1", "NY1"))
-
-# timepoint as factor (6hpi = reference)
-col_data$timepoint <- factor(col_data$timepoint,
-                             levels = c("6hpi", "12hpi", "24hpi"))
+# condition as factor 
+col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE207923_metadata.csv", row.names = FALSE)
@@ -150,17 +99,14 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE207923_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
+
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
-                                design = ~timepoint + condition)
-
-dds_collapsed <- collapseReplicates(dds,
-                                    groupby = col_data$GSM,
-                                    run     = col_data$sample)
+                                design = ~condition)
 
 # Principal Component Analysis 
-rlog_dds <- rlog(dds_collapsed)
+rlog_dds <- rlog(dds)
 
 # PCA Plot 
 plotPCA(rlog_dds)
@@ -171,10 +117,10 @@ pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
 write.csv(pca_data, "outputs/PCA/data/GSE207923_data.csv", row.names = F)
 
 # Differential Gene Expression Analysis 
-dds_collapsed <- DESeq(dds_collapsed)
+dds <- DESeq(dds)
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds_collapsed)
+resdf <- results(dds)
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
@@ -198,3 +144,4 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE207923_deseq2_results.csv", row.names = FALSE)
+

@@ -5,9 +5,6 @@
 # Description:
 #   Imports transcript-level quantifications from Salmon
 #   and summarizes to gene-level counts for DESeq2. 
-#    GSE245922: COVID-19 vs Control, Monocytes, clinical samples
-#    Condition: control, covid
-#    Note: EN98 has split runs (SRR26436342, SRR26436343)
 
 # Install Bioconductor Packages 
 pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
@@ -17,6 +14,7 @@ library(tidyverse)
 library(tximport)
 library(DESeq2)
 library(EnsDb.Hsapiens.v86)
+
 
 # Get the quant files and metadata
 # Collect the sample quant files
@@ -35,40 +33,16 @@ print(quant_files)
 # all should be TRUE
 file.exists(quant_files)  
 
-# Create Metadata (col_data)
-# GSE245922: COVID-19 vs Control, Monocytes, clinical samples
-# Condition: control, covid
-# Note: EN98 has split runs (SRR26436342, SRR26436343)
-condition_map <- c(
-  "SRR26436341" = "control",
-  "SRR26436342" = "control",  # split run of EN98 (Library Name EN99 in SRA)
-  "SRR26436343" = "control",  # split run of EN98
-  "SRR26436344" = "covid19",
-  "SRR26436345" = "covid19",
-  "SRR26436346" = "control",
-  "SRR26436347" = "covid19",
-  "SRR26436348" = "covid19"
-)
-
-gsm_map <- c(
-  "SRR26436341" = "EN100",
-  "SRR26436342" = "EN98",     # same BioSample as SRR26436343
-  "SRR26436343" = "EN98",     # split run
-  "SRR26436344" = "EN96",
-  "SRR26436345" = "EN83",
-  "SRR26436346" = "EN78",
-  "SRR26436347" = "EN70",
-  "SRR26436348" = "EN69"
-)
 # Create the data frame with row names AND a explicit sample column
 col_data <- data.frame(
   row.names = samples,
   sample    = samples,
-  patient   = gsm_map[samples],
-  condition = factor(condition_map[samples],
-                     levels = c("control", "covid19"))    # control = reference level
+  condition = c("control", "control", "control", "covid19",
+                "covid19", "control", "covid19", "covid19")
 )
 
+# condition as factor 
+col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE245922_metadata.csv", row.names = FALSE)
@@ -124,28 +98,22 @@ dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
                                 design = ~condition)
 
-# Split run merge
-dds_collapsed <- collapseReplicates(dds,
-                                    groupby = col_data$patient,
-                                    run     = col_data$sample)
-# Principal Component Analysis
-rlog_dds <- rlog(dds_collapsed)
+# Principal Component Analysis 
+rlog_dds <- rlog(dds)
 
-# PCA Plot
-plotPCA(rlog_dds, intgroup = "condition")
+# PCA Plot 
+plotPCA(rlog_dds)
 ggsave("outputs/PCA/plot/GSE245922_PCA.png")
 
-## PCA data
+# PCA data 
 pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
-write.csv(pca_data, "outputs/PCA/data/GSE245922_data.csv", row.names = FALSE)
+write.csv(pca_data, "outputs/PCA/data/GSE245922_data.csv", row.names = F)
 
-
-# Differential Gene Expression Analysis
-dds_collapsed <- DESeq(dds_collapsed)
-
+# Differential Gene Expression Analysis 
+dds <- DESeq(dds)
 
 # Get the results and immediately convert to a standard dataframe
-resdf <- results(dds_collapsed)
+resdf <- results(dds)
 res_df <- as.data.frame(resdf)
 
 # Rescue the row names (which contain your Gene Symbols/IDs) into a column
@@ -169,3 +137,4 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE245922_deseq2_results.csv", row.names = FALSE)
+
