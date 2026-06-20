@@ -34,21 +34,18 @@ print(quant_files)
 file.exists(quant_files)  
 
 # Create the data frame with row names AND a explicit sample column
-# GSE255647: SARS-CoV-1 and SARS-CoV-2 infection in Calu-3/2B4 cells
-# Conditions: Mock (control), SARS-CoV-1, SARS-CoV-2
-# Time points: 12 hpi, 24 hpi, 48 hpi
-# Replicates: 3 per condition per time point (total 27 samples)
 col_data <- data.frame(
   row.names = samples,
-  condition = factor(rep(c("SARS1", "SARS2", "Mock"), each = 9), 
-                     levels = c("SARS1", "SARS2", "Mock")),
-  timepoint = factor(rep(rep(c("48hpi", "24hpi", "12hpi"), each = 3), 3),
-                     levels = c("48hpi", "24hpi", "12hpi")))
-
+  sample    = samples,
+  condition = c("mock_48hpi", "mock_48hpi", "mock_48hpi", "mock_24hpi", "mock_24hpi", "mock_24hpi",
+                "mock_12hpi", "mock_12hpi", "mock_12hpi", "sars2_48hpi", "sars2_48hpi", "sars2_48hpi",
+                "sars2_24hpi", "sars2_24hpi", "sars2_24hpi", "sars2_12hpi", "sars2_12hpi", "sars2_12hpi",
+                "sars1_48hpi", "sars1_48hpi", "sars1_48hpi", "sars1_24hpi", "sars1_24hpi", "sars1_24hpi",
+                "sars1_12hpi", "sars1_12hpi", "sars1_12hpi")
+)
 
 # condition as factor 
-col_data$condition <- factor(col_data$condition,
-                             levels = c("SARS1", "SARS2", "Mock"))
+col_data$condition <- factor(col_data$condition)
 
 # Export metadata for later use 
 write.csv(col_data, "outputs/metadata/GSE255647_metadata.csv", row.names = FALSE)
@@ -98,6 +95,7 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE255647_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
+
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
@@ -108,7 +106,7 @@ rlog_dds <- rlog(dds)
 
 # PCA Plot 
 plotPCA(rlog_dds)
-ggsave("outputs/PCA/plot/GSE201325_PCA.png")
+ggsave("outputs/PCA/plot/GSE255647_PCA.png")
 
 # PCA data 
 pca_data <- plotPCA(rlog_dds, intgroup = "condition", returnData = TRUE)
@@ -140,5 +138,6 @@ annotated_res <- merge(res_df, annotations, by = "SYMBOL", all.x = TRUE)
 annotated_res <- annotated_res %>%
   dplyr::relocate(SYMBOL, GENENAME, GENEBIOTYPE)
 
-# Save the final annotated dataset safely!
+# Save the final annotated dataset safely!!
 write.csv(annotated_res, "outputs/DESeq2/GSE255647_deseq2_results.csv", row.names = FALSE)
+

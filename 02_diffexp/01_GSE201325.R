@@ -91,6 +91,7 @@ write.csv(tpm_counts, "outputs/counts_data/tpm_counts/GSE201325_tpm_counts.csv",
 # This must return TRUE before you proceed
 all(colnames(txi) == rownames(col_data))
 
+
 # Make DESeq dataset
 dds <- DESeqDataSetFromTximport(txi = txi,
                                 colData = col_data,
@@ -135,3 +136,4 @@ annotated_res <- annotated_res %>%
 
 # Save the final annotated dataset safely!
 write.csv(annotated_res, "outputs/DESeq2/GSE201325_deseq2_results.csv", row.names = FALSE)
+
