@@ -7,7 +7,7 @@
 #   and summarizes to gene-level counts for DESeq2. 
 
 # Install Bioconductor Packages 
-pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
+#pak::pkg_install(c("tidyverse", "tximport", "DESeq2", "EnsDb.Hsapiens.v86"))
 
 # Load libraries
 library(tidyverse)
